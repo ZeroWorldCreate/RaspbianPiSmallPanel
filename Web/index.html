@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>树莓派小面板</title>
+  <script src="https://unpkg.com/ionicons@4.5.10-0/dist/ionicons.js"></script>
+  <script src="js/jquery-3.4.1.min.js"></script>
+  <script src="js/mdui.min.js"></script>
+  <script src="js/dashBoard.js"></script>
+  <script src="js/echarts.min.js"></script>
+  <link rel="stylesheet" href="css/mdui.min.css">
+
+  <style type="text/css">
+    body,
+    html {
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+
+    .page-header {
+      height: 70px;
+      padding-left: 10px;
+      padding-right: 10px;
+      z-index: 999;
+    }
+
+    .page-header .top-level-entry {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    #MainPageContext {
+      overflow: hidden;
+      width: 100%;
+    }
+  </style>
+  <script>
+    var Snackbar_;  //声明SnackBar实例
+
+    $(document).ready(function () {
+      if (isIE()) {
+        window.close();
+      };
+      $('#wifi-switch-dom').on('click', function (e) {
+        e.stopPropagation();
+      });
+
+      $('#nas-switch-dom').on('click', function (e) {
+        e.stopPropagation();
+      });
+
+      $('#file-switch-dom').on('click', function (e) {
+        e.stopPropagation();
+      });
+
+      $('#MainPageContext').animate({
+        'height': document.body.offsetHeight - 70
+      });
+
+      setTimeout(GetPage(true, 'HomePage.html'), 200);
+    });
+
+    function isIE() { //ie?
+      if (!!window.ActiveXObject || "ActiveXObject" in window)
+        return true;
+      else
+        return false;
+    };
+
+    function WIFISwitch(sw) { //WiFi功能开关
+      var wifiSwitchDOM = $('#wifi-switch');
+      var currSwitch = wifiSwitchDOM.prop('checked');
+
+      if (currSwitch == false) {
+        if (sw == undefined) {
+          var inst = new mdui.Dialog('#example-1', {
+            closeOnEsc: false
+          });
+          inst.open();
+        } else if (sw == true) {
+          wifiSwitchDOM.prop('checked', false);
+          TipsShow('<div class="mdui-spinner" style="width: 20px; height: 20px;"></div>', 'WiFi功能', '正在关闭：', 'WiFi_Tool_state_Color', 'WiFi_Tool_state_Text', true/*是否更改状态*/, 0);
+
+          //模拟传输完毕-开始
+          setTimeout(function () { setTimeout(Snackbar_.close(), 4000); }, 4000);
+          //模拟传输完毕-结束
+        } else {
+          wifiSwitchDOM.prop('checked', true);
+          TipsShow("原谅你啦~ (〃'▽'〃)", "", "", '', '', false/*是否更改状态*/, '');
+        }
+      } else {
+        wifiSwitchDOM.prop('checked', true);
+        TipsShow('<div class="mdui-spinner" style="width: 20px; height: 20px;"></div>', 'WiFi功能', '正在开启：', 'WiFi_Tool_state_Color', 'WiFi_Tool_state_Text', true/*是否更改状态*/, 1);
+
+        //模拟传输完毕-开始
+        setTimeout(function () { setTimeout(Snackbar_.close(), 4000); }, 4000);
+        //模拟传输完毕-结束
+      }
+    }
+
+    function NASSwitch(sw) {  //NAS服务器开关
+      var nasSwitchDOM = $('#nas-switch');
+      var currSwitch = nasSwitchDOM.prop('checked');
+
+      if (currSwitch == false) {
+        if (sw == undefined) {
+          var inst = new mdui.Dialog('#example-2', {
+            closeOnEsc: false
+          });
+          inst.open();
+        } else if (sw == true) {
+          //关闭服务
+          nasSwitchDOM.prop('checked', false);
+          TipsShow('<div class="mdui-spinner" style="width: 20px; height: 20px;"></div>', 'NAS服务器', '正在关闭：', 'NAS_Server_state_Color', 'NAS_Server_state_Text', true/*是否更改状态*/, 0);
+
+          //模拟传输完毕-开始
+          setTimeout(function () { setTimeout(Snackbar_.close(), 4000); Update_NAS_Server_Progress(false);}, 4000);
+          //模拟传输完毕-结束
+        } else {
+          //手滑了~
+          nasSwitchDOM.prop('checked', true);
+          TipsShow("原谅你啦~ (〃'▽'〃)", "", "", '', '', false/*是否更改状态*/, '');
+        }
+      } else {
+        //开启服务
+        nasSwitchDOM.prop('checked', true);
+        TipsShow('<div class="mdui-spinner" style="width: 20px; height: 20px;"></div>', 'NAS服务器', '正在开启：', 'NAS_Server_state_Color', 'NAS_Server_state_Text', true/*是否更改状态*/, 1);
+        //模拟传输完毕-开始
+        setTimeout(function () { setTimeout(Snackbar_.close(), 4000); Update_NAS_Server_Progress(true);}, 4000);
+        //模拟传输完毕-结束
+      }
+    }
+
+    function FILESwitch(sw) { //文件传输服务开关
+      var fileSwitchDOM = $('#file-switch');
+      var currSwitch = fileSwitchDOM.prop('checked');
+
+      if (currSwitch == false) {
+        if (sw == undefined) {
+          var inst = new mdui.Dialog('#example-3', {
+            closeOnEsc: false
+          });
+          inst.open();
+        }
+        else if (sw == true) {
+          fileSwitchDOM.prop('checked', false); //我已了解风险
+          TipsShow('<div class="mdui-spinner" style="width: 20px; height: 20px;"></div>', '文件传输服务', '正在关闭：', 'File_Server_state_Color', 'File_Server_state_Text', true/*是否更改状态*/, 0);
+
+          //模拟传输完毕-开始
+          setTimeout(function () { setTimeout(Snackbar_.close(), 4000); }, 4000);
+          //模拟传输完毕-结束
+        }
+        else {
+          fileSwitchDOM.prop('checked', true);
+          TipsShow("原谅你啦~ (〃'▽'〃)", "", "", '', '', false/*是否更改状态*/, '');
+        }
+      }
+      else {
+        fileSwitchDOM.prop('checked', true);
+        TipsShow('<div class="mdui-spinner" style="width: 20px; height: 20px;"></div>', '文件传输服务', '正在开启：', 'File_Server_state_Color', 'File_Server_state_Text', true/*是否更改状态*/, 1);
+
+        //模拟传输完毕-开始
+        setTimeout(function () { setTimeout(Snackbar_.close(), 4000); }, 4000);
+        //模拟传输完毕-结束
+      }
+    }
+
+    function GetPage(ifSleep, fileName) {   //Ajax获取指定页面内容
+      if (ifSleep == true) {
+        $.ajax({
+          url: fileName,
+          success: function (date) {
+            $('#MainPageContext').html(date);
+            setTimeout(function(){OpenMenu();}, 300);
+          }
+        });
+      }
+      else {
+        $.ajax({
+          url: fileName,
+          success: function (date) {
+            $('#MainPageContext').html(date);
+            setTimeout(function(){OpenMenu();}, 300);
+          }
+        });
+      }
+
+    }
+
+    function OpenMenu() {   //弹出左边的抽屉式菜单，绑定内容由GetPage()函数获取（Ajax）
+      var menu = $('#drawer');
+      var state = menu.attr("state");
+      var RPCT = $('#RightPageContext');
+      var ScreenWidth = document.body.offsetWidth //获取浏览器可视宽度
+
+      if (state === "show") {
+        menu.attr("state", "hide");
+        menu.animate({
+          'margin-left': '-250px'
+        });
+
+        RPCT.animate({
+          'width': ScreenWidth
+        });
+        // menu.css({
+        //   'margin-left': '-250px'
+        // });
+      } else if (state === "hide") {
+        menu.attr("state", "show");
+        menu.animate({
+          'margin-left': '0'
+        });
+        // menu.css({
+        //   'margin-left': '0'
+        // });
+        RPCT.animate({
+          'width': ScreenWidth - 250
+        });
+      }
+
+    };
+
+    function TipsShow(NeedSpinner, Message, state, Id_Color, Id_Text, isChange, what_Change) {    //SnackBar提示框显示
+      var In_Message = NeedSpinner + state + Message;
+
+      Snackbar_ = mdui.snackbar({
+        'message': In_Message,
+        'position': 'bottom',
+        'timeout': 0,
+        // 需要初始化
+        'onOpened': function () {
+          mdui.mutation()
+        },
+        'onClosed': function () {
+          if (isChange == true) {
+            var O_Color = document.getElementById(Id_Color);
+            var O_Text = document.getElementById(Id_Text);
+
+            if (what_Change == 0) {
+              O_Color.style.backgroundColor = "rgb(226, 41, 41)";
+              O_Text.innerText = '服务未启用';
+            }
+            else if (what_Change == 1) {
+              O_Color.style.backgroundColor = "rgb(0, 170, 0)";
+              O_Text.innerText = '服务已启用';
+            }
+            else {
+              alert("内部错误！");
+            };
+          };
+        },
+      });
+    }
+
+    function Update_NAS_Server_Progress(isNeed){    //更新NAS服务器所属进度条
+
+      var ALL_Disk_MAX = 16384; //1024 = 1MB, 16384MB = 16GB
+      var Really_Disk = 5120;   //5GB
+
+      var BFB = (Really_Disk / ALL_Disk_MAX * 100);   //计算占用百分比与剩余百分比
+      var L_BFB = 100 - BFB;
+
+      var Progress = $('#NAS_SERVER_disk_Progress');    //获取三个实例
+      var Text = document.getElementById('NAS_Server_disk_Text_BFB');
+      var CAP = document.getElementById('NAS_Server_disk_Text_CAP');;
+
+      if (isNeed == true){    //是否开关判断-----开
+        if (L_BFB <= 20){
+          Progress.css('background-color', 'rgb(226, 41, 41)');
+        }
+        else if (L_BFB > 20){
+          Progress.css('background-color', 'rgb(142, 207, 43)')
+        }
+        else {
+          alert("获取进度条容量失败！（内部错误！）")
+        };
+        Progress.animate({
+          'width' : BFB + '%',
+        });
+        Text.style.bottom = "10px";
+        Text.style.fontSize = "12px"
+        Text.innerText = L_BFB + '%';
+        CAP.innerText = '(' + (ALL_Disk_MAX - Really_Disk) + 'MB' + ')';
+      }
+      else if (isNeed == false){    //是否开关判断-----关
+        Progress.animate({
+          'width' : '0%',
+        });
+        Text.style.bottom = "0px";
+        Text.style.fontSize = "15px";
+        Text.innerText = 'Unknow';
+        CAP.innerText = '';
+      }
+      else{
+        alert("内部错误！");
+      };
+    };
+  </script>
+</head>
+
+<body class="mdui-theme-layout-dark mdui-theme-primary-light-green">
+  <div class="mdui-container-fluid">
+    <div class="mdui-row">
+      <div class="page-header mdui-color-grey-900 mdui-col-md-12 mdui-shadow-4">
+        <div class="mdui-row" style="height: 100%">
+
+          <button class="mdui-btn mdui-btn-icon mdui-ripple" onclick="OpenMenu()"
+            style="width: 50px; height: 50px; position: absolute; top: 50%; left: 20px; transform: translateY(-50%); z-index: 20;">
+            <i class="mdui-icon material-icons">&#xe5d2;</i>
+          </button>
+
+          <div class="mdui-col-sm-2 mdui-valign" style="height: 100%">
+            <button class="top-level-entry mdui-btn mdui-center" onclick="GetPage(false, 'HomePage.html')">首页</button>
+          </div>
+
+          <div class="mdui-col-sm-2 mdui-valign" style="height: 100%">
+            <button class="top-level-entry mdui-btn mdui-center" mdui-menu="{target: '#menu1'}">离线下载</button>
+            <ul class="mdui-menu" id="menu1">
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">BT下载</a>
+              </li>
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">链接下载(HTTP)</a>
+              </li>
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">度盘黑科技</a>
+              </li>
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">Aria2设置</a>
+              </li>
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">设置</a>
+              </li>
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">帮助</a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="mdui-col-sm-2 mdui-valign" style="height: 100%; z-index: 1">
+            <button class="top-level-entry mdui-btn mdui-center" mdui-menu="{target: '#menu2'}">WiFi工具</button>
+            <ul class="mdui-menu" id="menu2">
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">
+                  <div style="display: flex; align-items:center;">
+                    <div id="WiFi_Tool_state_Color"
+                      style="width: 10px; height: 10px; border-radius: 100px; background-color: rgb(226, 41, 41); ">
+                      <!--服务启动时颜色： rgb(0, 170, 0)，否则：rgb(226, 41, 41)-->
+                    </div>
+                    <p id="WiFi_Tool_state_Text" style="margin: 0; margin-left: 10px;">服务未启用</p>
+                  </div>
+                </a>
+              </li>
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">WiFi桥接</a>
+              </li>
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">WiFi干扰</a>
+              </li>
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">WiFi暴力破解</a>
+              </li>
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">WiFi抓包</a>
+              </li>
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">帮助</a>
+              </li>
+              <li class="mdui-menu-item">
+                <label id="wifi-switch-dom" class="mdui-switch mdui-m-x-1">
+                  <input id="wifi-switch" type="checkbox" onclick="WIFISwitch()" />
+                  <i class="mdui-switch-icon"></i>
+                </label>
+              </li>
+            </ul>
+          </div>
+
+          <div class="mdui-col-sm-2 mdui-valign" style="height: 100%">
+            <button class="top-level-entry mdui-btn mdui-center" mdui-menu="{target: '#menu3'}">NAS服务器</button>
+            <ul class="mdui-menu" id="menu3">
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">
+                  <div style="display: flex; align-items:center;">
+                    <div id="NAS_Server_state_Color"
+                      style="width: 10px; height: 10px; border-radius: 100px; background-color: rgb(226, 41, 41); ">
+                      <!--服务启动时颜色： rgb(0, 170, 0)，否则：rgb(226, 41, 41)-->
+                    </div>
+                    <p id="NAS_Server_state_Text" style="margin: 0; margin-left: 10px;">服务未启动</p>
+                  </div>
+                </a>
+              </li>
+              <li class="mdui-menu-item">
+
+                <a href="javascript:;" class="mdui-ripple" style="padding: 0">
+                  <div class="mdui-progress" style="height: 100%; position: relative;">
+                    <div class="mdui-progress-determinate mdui-color-grey-400" style="width: 100%;"></div>
+                    <div id="NAS_SERVER_disk_Progress" class="mdui-progress-determinate" style="width: 0%; background-color: rgb(142, 207, 43);"></div>
+                    <!--容量已用80%（剩余20%）颜色：rgb(226, 41, 41)，否则：rgb(142, 207, 43)-->
+                    <p id="NAS_Server_disk_Text_BFB" style="margin: 0; position: absolute; left: 50%; bottom: 0px;transform: translateX(-50%); font-size: 15px;">Unknow</p>
+                    <p id="NAS_Server_disk_Text_CAP" style="margin: 0; position: absolute; left: 50%; top: 10px;transform: translateX(-50%); font-size: 12px;"></p>
+                  </div>
+                </a>
+
+              </li>
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">设置</a>
+              </li>
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">帮助</a>
+              </li>
+              <li class="mdui-menu-item">
+                <label id="nas-switch-dom" class="mdui-switch mdui-m-x-1">
+                  <input id="nas-switch" type="checkbox" onclick="NASSwitch()" />
+                  <i class="mdui-switch-icon"></i>
+                </label>
+              </li>
+            </ul>
+          </div>
+
+          <div class="mdui-col-sm-2 mdui-valign" style="height: 100%">
+            <button class="top-level-entry mdui-btn mdui-center" mdui-menu="{target: '#menu4'}">文件传输服务</button>
+            <ul class="mdui-menu" id="menu4">
+              <li class="mdui-menu-item">
+                <a class="mdui-ripple">
+                  <div style="display: flex; align-items:center;">
+                    <div id="File_Server_state_Color"
+                      style="width: 10px; height: 10px; border-radius: 100px; background-color: rgb(226, 41, 41); ">
+                      <!--服务启动时颜色： rgb(0, 170, 0)，否则：rgb(226, 41, 41)-->
+                    </div>
+                    <p id="File_Server_state_Text" style="margin: 0; margin-left: 10px;">服务未启动</p>
+                  </div>
+                </a>
+              </li>
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">设置</a>
+              </li>
+              <li class="mdui-menu-item">
+                <a href="javascript:;" class="mdui-ripple">帮助</a>
+              </li>
+              <li class="mdui-menu-item">
+                <label id="file-switch-dom" class="mdui-switch mdui-m-x-1">
+                  <input id="file-switch" type="checkbox" onclick="FILESwitch()" />
+                  <i class="mdui-switch-icon"></i>
+                </label>
+              </li>
+            </ul>
+          </div>
+
+          <div class="mdui-col-sm-2 mdui-valign" style="height: 100%">
+            <button class="mdui-btn mdui-center mdui-color-pink mdui-shadow-4 mdui-ripple">用户登录</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mdui-container">
+    <div class="mdui-dialog" id="example-1">
+      <!--WiFi开关对话框-->
+      <div class="mdui-dialog-title">您确定要关闭WiFi功能吗？</div>
+      <div class="mdui-dialog-content">关闭WiFi功能将导致任何有关于WiFi的工具都无法使用！</div>
+      <div class="mdui-dialog-actions">
+        <button class="mdui-btn mdui-ripple" mdui-dialog-close onclick="WIFISwitch(false)">手滑了~</button>
+        <button class="mdui-btn mdui-ripple" mdui-dialog-confirm onclick="WIFISwitch(true)">确定</button>
+      </div>
+    </div>
+    <div class="mdui-dialog" id="example-2">
+      <!--NAS服务器开关对话框-->
+      <div class="mdui-dialog-title">您确定要关闭NAS服务器吗？</div>
+      <div class="mdui-dialog-content">关闭NAS服务器将导致您的网络存储不可用！</div>
+      <div class="mdui-dialog-actions">
+        <button class="mdui-btn mdui-ripple" mdui-dialog-close onclick="NASSwitch(false)">手滑了~</button>
+        <button class="mdui-btn mdui-ripple" mdui-dialog-confirm onclick="NASSwitch(true)">确定</button>
+      </div>
+    </div>
+    <div class="mdui-dialog" id="example-3">
+      <!--文件传输服务开关对话框-->
+      <div class="mdui-dialog-title">您确定要关闭文件传输服务吗？</div>
+      <div class="mdui-dialog-content">关闭文件传输服务将导致您无法远程传输服务！请慎重！！！</div>
+      <div class="mdui-dialog-actions">
+        <button class="mdui-btn mdui-ripple" mdui-dialog-close onclick="FILESwitch(false)">手滑了~</button>
+        <button class="mdui-btn mdui-ripple" mdui-dialog-confirm onclick="FILESwitch(true)">我已了解风险，任然确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- <button class="mdui-btn mdui-ripple mdui-color-pink" onclick="TipsShow()">测试按钮</button> -->
+
+  <!-- 主内容界面 -->
+  <div id="MainPageContext">
+
+  </div>
+
+  <!-- 提示性SnackBar -->
+  <div id="BottomTips">
+
+  </div>
+
+</body>
+
+</html>

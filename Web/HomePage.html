@@ -1,0 +1,54 @@
+<script>
+  function dashBoard(fileName) {
+    $.ajax({
+      url: fileName,
+      success: function (date) {
+        $('#RightPageContext').html(date);
+
+        $('#RightPageContext').animate({
+          'top':'0',
+          'opacity':'1'
+        }, 500);
+      },
+    });
+  }
+</script>
+
+<div id="drawer" state="hide">
+  <ul class="mdui-list">
+    <li class="mdui-list-item mdui-ripple">
+      <i class="mdui-icon material-icons">&#xe871;</i>
+      <div class="mdui-list-item-content" onclick="dashBoard('HomePage_dashBoard.html')">仪表盘</div>
+    </li>
+  </ul>
+</div>
+<div id="RightPageContext">
+  
+</div>
+<style>
+  #drawer {
+    margin-left: -250px;
+
+    height: 100%;
+    width: 250px;
+    background-color: rgb(60, 60, 60);
+    text-align: center;
+    float: left;
+
+    /*transition: margin-left 0.5s;*/ 
+  }
+
+  #RightPageContext {
+
+    position: relative;
+    top: 100%;
+    opacity: 0;
+
+    height: 100%;
+    width: calc(100% - 250px);
+    text-align: center;
+    float: right;
+
+    /*transition: margin-left 0.5s;*/
+  }
+</style>

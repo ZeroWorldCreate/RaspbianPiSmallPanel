@@ -1,0 +1,178 @@
+<div id="dashBoard">
+    <!--仪表盘开始-->
+    <div id="MainPanel">        <!--备用ID-->
+        <button onclick="Update_ALL()">立即刷新</button>
+        <!--网络状态开始-->
+        <div id="NET_state_table" style="height: 200px;"></div>
+        <br />
+
+        <!--网络状态结束-->
+        <!--圆形进度条--开始-->
+        <div class="Progresses">
+            <!--CPU状态-->
+
+            <div class="Progress_Table">
+                <div class="circle_Progress_Background Progress">
+                    <div class="circle_Progress_Left"></div>
+                    <div id="CPU_Progress" class="circle_Progress_Right"></div>
+                    <div class="circle_Progress_Mask">
+                        <span id="CPU_what_Progress" class="what_Progress">0%</span>
+                        <br />
+                        <a style="font-size: 10px; color: rgb(238, 102, 102); position: relative; top: 25px;">CPU</a>
+                    </div>
+                </div>
+                <div id="CPU_state_table" class="Progress_Table" style="height: 200px;"></div>
+            </div>
+
+            <!--内存状态-->
+            <div class="Progress_Table">
+                <div class="circle_Progress_Background Progress">
+                    <div class="circle_Progress_Left"></div>
+                    <div id="Memory_Progress" class="circle_Progress_Right"></div>
+                    <div class="circle_Progress_Mask">
+                        <span id="Memory_what_Progress" class="what_Progress">0%</span>
+                        <br />
+                        <a style="font-size: 10px; color: rgb(238, 102, 102); position: relative; top: 25px;">内存占用</a>
+                    </div>
+                </div>
+                <div id="Memory_state_table" class="Progress_Table" style="height: 200px;"></div>
+            </div>
+
+            <!--存储状态-->
+            <div class="Progress_Table">
+                <div class="circle_Progress_Background Progress">
+                    <div class="circle_Progress_Left"></div>
+                    <div id="Disk_Progress" class="circle_Progress_Right"></div>
+                    <div class="circle_Progress_Mask">
+                        <span id="Disk_what_Progress" class="what_Progress">3%</span>
+                        <br />
+                        <a style="font-size: 10px; color: rgb(238, 102, 102); position: relative; top: 25px;">存储</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--圆形进度条--结束-->
+    </div>
+    <!--仪表盘结束-->
+</div>
+
+
+<script>
+
+    $(document).ready(function () {
+        Update_Core_Info("CPU_what_Progress", "Memory_what_Progress");
+        Progress('CPU_Progress', 'CPU_what_Progress');
+        Progress('Memory_Progress', 'Memory_what_Progress');
+        Progress('Disk_Progress', 'Disk_what_Progress');
+        Update_state(0, 'NET_state_table', '吞吐量', ['上传', '下载'], y1_data_NET_state_table, data(), y2_data_NET_state_table, data()); //统计图初始化
+        Update_state(0, 'CPU_state_table', '利用率 %', ['CPU'], y1_data_CPU_state_table, GetSpanData('CPU_what_Progress'));
+        Update_state(0,'Memory_state_table', '利用率 %',['内存'], y1_data_Memory_state_table, GetSpanData('Memory_what_Progress'));
+        setInterval("Update_ALL()", 4000);
+
+    });
+    
+</script>
+<style>
+    #dashBoard {
+
+        height: 100%;
+        width: 100%;
+        text-align: center;
+        background-color: rgba(40, 40, 40, 0.6);
+
+        overflow-y: auto;
+        overflow-x: hidden;
+        
+    }
+
+    .Progresses {
+        position: relative;
+        left: 10px;
+    }
+
+    .Progress {
+        float: left;
+    }
+
+    .Progress_Table {
+        left: 20px;
+        bottom: 40px;
+    }
+
+    .circle_Progress_Background {
+        width: 100px;
+        height: 100px;
+        background: rgb(68, 197, 36);
+        border-radius: 50%;
+    }
+
+    .circle_Progress_Left {
+        width: 50px;
+        height: 100px;
+        background: rgb(255, 255, 255);
+        border-radius: 100px 0 0 100px;
+    }
+
+    .circle_Progress_Right {
+        /*第一遮挡层*/
+        width: 50px;
+        height: 100px;
+        background: rgb(255, 255, 255);
+        border-radius: 0 100px 100px 0;
+        margin-left: 50px;
+        transform-origin: left;
+        /*transform: rotate(180deg);*/
+        transition: all 1s linear;
+
+        position: relative;
+        bottom: 100px;
+    }
+
+    .circle_Progress_Right_middle {
+        /*中部过度层*/
+        width: 50px;
+        height: 100px;
+        background: rgba(68, 197, 36, 0);
+        border-radius: 0 100px 100px 0;
+        margin-left: 50px;
+        transform-origin: left;
+        transform: rotate(0deg);
+
+
+        position: relative;
+        bottom: 100px;
+    }
+
+    .circle_Progress_Right_more {
+        /*第二合并层*/
+        width: 50px;
+        height: 100px;
+        background: rgb(68, 197, 36);
+        border-radius: 0 100px 100px 0;
+        margin-left: 50px;
+        transform-origin: left;
+        /*transform: rotate(1deg);*/
+        transition: all 1s linear;
+
+        position: relative;
+        bottom: 100px;
+    }
+
+    .circle_Progress_Mask {
+        width: 80px;
+        height: 80px;
+        background: rgb(40, 40, 40);
+        border-radius: 50%;
+
+        position: relative;
+        bottom: 190px;
+        left: 10px;
+    }
+
+    .what_Progress {
+        position: relative;
+        top: 25px;
+        font-size: 20px;
+        color: white;
+    }
+</style>
